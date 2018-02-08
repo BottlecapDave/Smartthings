@@ -84,9 +84,19 @@ def meterHandler(evt) {
 def switchOff() {
 	def thresholdValue = threshold as int
 	if (state.lastvalue <= thresholdValue) {
-    	log.debug "${meter} reported energy consumption below ${threshold} after ${minutespassed}. Turning off switches."
-		
-		switches.off()
+
+        // Check if the current time is within the applicable hours window (if provided)
+        def isBetween = true
+        log.debug "FromTime: ${fromTime}; ToTime: ${toTime}"
+        if (fromTime != null && toTime != null) {
+            log.debug "Checking time of day"
+            isBetween = timeOfDayIsBetween(fromTime, toTime, new Date(), location.timeZone)
+        }
+
+        if (isBetween) {
+    	    log.debug "${meter} reported energy consumption below ${threshold} after ${minutespassed}. Turning off switches."
+		    switches.off()
+        }
 	}
     
     state.isSwitchOffScheduled = false
